@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 
 mlflow.set_tracking_uri("http://mlflow-service:5000")
 
+
 X, y = fetch_california_housing(return_X_y=True)
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
