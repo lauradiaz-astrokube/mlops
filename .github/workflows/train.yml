@@ -7,15 +7,34 @@ on:
 
 jobs:
 
-  build-and-push:
+  train-model:
     runs-on: ubuntu-latest
+    if: contains(toJson(github.event.commits.*.modified), 'model/')
 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install scikit-learn joblib numpy mlflow
+
+      - name: Train and register model
+        run: |
+          python model/train.py
+
+  deploy-app:
+    runs-on: ubuntu-latest
     if: contains(toJson(github.event.commits.*.modified), 'app/')
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Login to DockerHub
+      - name: Login DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -27,4 +46,4 @@ jobs:
 
       - name: Push image
         run: |
-          docker push lauradiaz/mlops-api:latest
+          docker push lauradiazmondejar/mlops-api:latest

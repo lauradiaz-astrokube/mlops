@@ -2,11 +2,12 @@ from fastapi import FastAPI
 import joblib
 import numpy as np
 from pydantic import BaseModel
+import mlflow.pyfunc
 
+MODEL_URI = "models:/mlops-model@challenger"
+
+model = mlflow.pyfunc.load_model(MODEL_URI)
 app = FastAPI()
-
-# Cargar modelo al iniciar
-model = joblib.load("random_forest_model.joblib")
 
 class HouseFeatures(BaseModel):
     MedInc: float
