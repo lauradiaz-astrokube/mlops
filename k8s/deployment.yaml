@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: mlops-api
-          image: lauradiaz/mlops-api:latest
+          image: lauradiazmondejar/mlops-api:latest
           ports:
             - containerPort: 8000

@@ -23,7 +23,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t lauradiaz/mlops-api:latest ./app
+          docker build -t lauradiazmondejar/mlops-api:latest ./app
 
       - name: Push image
         run: |
