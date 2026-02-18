@@ -1,4 +1,4 @@
-name: Train and Deploy Model
+name: CI-CD Pipeline
 
 on:
   push:
@@ -6,8 +6,12 @@ on:
       - main
 
 jobs:
-  train-and-deploy:
+
+  # model/
+  deploy-model:
     runs-on: ubuntu-latest
+
+    if: contains(toJson(github.event.commits.*.modified), 'model/')
 
     steps:
       - name: Checkout repo
@@ -24,7 +28,7 @@ jobs:
 
       - name: Train model
         run: |
-          python train.py
+          python model/train.py
 
       - name: Upload model to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -34,3 +38,33 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "random_forest_model.joblib"
           target: "/home/ec2-user/mlops-app/"
+
+  # app/
+  deploy-app:
+    runs-on: ubuntu-latest
+
+    if: contains(toJson(github.event.commits.*.modified), 'app/')
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Copy API to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "app/"
+          target: "/home/ec2-user/mlops-app/"
+
+      - name: Restart API on EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            pkill -f "python app.py" || true
+            cd /home/ec2-user/mlops-app/app
+            nohup python app.py > output.log 2>&1 &
